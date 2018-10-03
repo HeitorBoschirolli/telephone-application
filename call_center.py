@@ -12,13 +12,12 @@ class CallCenter(cmd.Cmd):
         cur_call = Call(id)
         cur_call.search_operator(operators)
 
-    def do_answer(self, id, operators):
-        print("you answered the id", id)
-        operators[id].answer()
+    def do_answer(self, id):
+        operators[ord(id) - ord('A')].answer()
 
     
     def do_reject(self, id):
-        print("you rejected a call from the id", id)
+        operators[ord(id) - ord('A')].answer()
     
     def do_hangup(self, id):
         print("you hanged up the call with id", id)
@@ -31,21 +30,25 @@ class Operator:
         self.id = id
         self.status = status
         self.call_id = call_id
-    def ring(self, id):
-        print ("Call", id, "ringing for operator", self.name)
+    def ring(self, call_id):
+        print ("Call", call_id, "ringing for operator", self.id)
         self.status = RINGING
+        self.call_id = call_id
     def answer(self):
+        print ("Call", self.call_id, "answered by operator", self.id)
         self.status = BUSY
     def reject(self):
+        print("Call", self.call_id, "rejected by operator", self.id)
         self.status = AVAILABLE
     def hangup(self):
         self.status = AVAILABLE
 
 class Call:
-    def __init__(self, id, last_operator=-1):
+    def __init__(self, id, last_operator=0):
         self.id = id
         self.last_operator = last_operator
     def search_operator(self, operators):
+        self.last_operator = self.last_operator % len(operators)
         for i in range(self.last_operator, len(operators)):
             if operators[i].status == AVAILABLE:
                 operators[i].ring(self.id)
@@ -77,4 +80,4 @@ if __name__ == '__main__':
 
     operators = create_operators(args.operators)
 
-    # CallCenter().cmdloop()
+    CallCenter().cmdloop()
